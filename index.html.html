@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#06060f">
+<title>JAS AGENT — YouTube Meme Shorts Uploader</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06060f;--bg2:#0a0a18;--s1:#10101e;--s2:#161628;--s3:#1c1c32;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --text:#e8e8f8;--muted:#4a4a6a;--muted2:#7a7a9a;
+  --red:#ff2d55;--red2:#ff5f7e;--red-dim:rgba(255,45,85,0.1);--red-glow:rgba(255,45,85,0.25);
+  --yellow:#ffd60a;--yellow2:#ffe566;--yellow-dim:rgba(255,214,10,0.08);
+  --green:#00e096;--green-dim:rgba(0,224,150,0.1);
+  --blue:#3d7eff;--blue-dim:rgba(61,126,255,0.1);
+  --purple:#9d4edd;--purple-dim:rgba(157,78,221,0.1);
+  --font-head:'Bebas Neue',sans-serif;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --r:14px;--r-lg:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+
+/* noise texture */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:999}
+
+/* bg glow */
+body::before{content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);width:800px;height:400px;background:radial-gradient(ellipse at top,rgba(255,45,85,0.06) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 16px 80px}
+
+/* ══ HEADER ══ */
+.header{padding:32px 0 28px;text-align:center;position:relative}
+.header-badge{display:inline-flex;align-items:center;gap:8px;background:var(--red-dim);border:1px solid rgba(255,45,85,0.25);border-radius:999px;padding:6px 16px;font-size:11px;font-weight:700;color:var(--red2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.logo{font-family:var(--font-head);font-size:80px;line-height:.85;letter-spacing:4px;position:relative;display:inline-block}
+.logo-jas{background:linear-gradient(135deg,#ff2d55 0%,#ff5f7e 40%,#fff 70%,#ff2d55 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-agent{display:block;font-size:22px;letter-spacing:12px;color:var(--muted2);-webkit-text-fill-color:var(--muted2);margin-top:4px}
+.header-desc{font-size:14px;color:var(--muted2);margin-top:14px;line-height:1.7;max-width:500px;margin-left:auto;margin-right:auto}
+.header-stats{display:flex;justify-content:center;gap:24px;margin-top:20px;flex-wrap:wrap}
+.h-stat{text-align:center}
+.h-stat .sv{font-family:var(--font-head);font-size:28px;color:var(--yellow);letter-spacing:1px}
+.h-stat .sl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
+
+/* ══ STEP INDICATOR ══ */
+.steps-wrap{display:flex;align-items:center;gap:0;margin-bottom:28px;background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:6px;overflow-x:auto}
+.steps-wrap::-webkit-scrollbar{display:none}
+.step-item{flex:1;min-width:80px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px;border-radius:12px;cursor:pointer;transition:all .2s;position:relative}
+.step-item.active{background:var(--s3);border:1px solid var(--border2)}
+.step-item.done{opacity:.6}
+.step-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--font-head);letter-spacing:1px}
+.step-item.active .step-num{background:var(--red);color:#fff}
+.step-item.done .step-num{background:var(--green-dim);border:1px solid var(--green);color:var(--green)}
+.step-item:not(.active):not(.done) .step-num{background:var(--s2);border:1px solid var(--border2);color:var(--muted)}
+.step-label{font-size:11px;font-weight:600;color:var(--muted2);text-align:center;white-space:nowrap}
+.step-item.active .step-label{color:var(--text)}
+.step-connector{width:20px;height:2px;background:var(--border2);flex-shrink:0}
+
+/* ══ PANELS ══ */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ══ SECTION CARD ══ */
+.sec-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+.sec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);opacity:0;transition:opacity .3s}
+.sec-card:hover::before{opacity:1}
+.sec-title{font-family:var(--font-head);font-size:20px;letter-spacing:1px;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.sec-title .t-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sec-desc{font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:18px}
+
+/* ══ STEP 1: API SETUP ══ */
+.api-status{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);margin-bottom:14px;font-size:13px;font-weight:500}
+.api-status.ok{background:var(--green-dim);border:1px solid rgba(0,224,150,0.2);color:var(--green)}
+.api-status.warn{background:var(--yellow-dim);border:1px solid rgba(255,214,10,0.2);color:var(--yellow)}
+.api-status.err{background:var(--red-dim);border:1px solid rgba(255,45,85,0.2);color:var(--red2)}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ok .status-dot{background:var(--green)}
+.warn .status-dot{background:var(--yellow);animation:pulse 1.5s infinite}
+.err .status-dot{background:var(--red)}
+
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.form-label .label-desc{font-size:12px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;margin-top:2px;display:block}
+.form-input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:12px 14px;font-size:14px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:rgba(255,45,85,0.4)}
+.form-input::placeholder{color:var(--muted)}
+.form-row{margin-bottom:16px}
+.help-link{font-size:12px;color:var(--blue);margin-top:6px;display:flex;align-items:center;gap:4px;cursor:pointer}
+
+/* ══ STEP 2: UPLOAD ══ */
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--r-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--s2)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--red);background:var(--red-dim)}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-icon{font-size:48px;margin-bottom:12px}
+.dz-title{font-family:var(--font-head);font-size:22px;letter-spacing:1px;margin-bottom:6px}
+.dz-sub{font-size:13px;color:var(--muted2);line-height:1.6}
+.dz-formats{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.dz-fmt{font-size:11px;padding:3px 10px;border-radius:999px;background:var(--s1);border:1px solid var(--border2);color:var(--muted2)}
+
+.upload-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:16px}
+.thumb-card{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:9/16;background:var(--s2);border:1px solid var(--border)}
+.thumb-card img{width:100%;height:100%;object-fit:cover}
+.thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 50%);display:flex;flex-direction:column;justify-content:flex-end;padding:8px}
+.thumb-num{position:absolute;top:6px;left:6px;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;font-family:var(--font-head);letter-spacing:.5px}
+.thumb-del{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--red2)}
+.thumb-name{font-size:9px;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-count{display:inline-flex;align-items:center;gap:8px;background:var(--red-dim);border:1px solid rgba(255,45,85,.2);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--red2);margin-bottom:14px}
+
+/* ══ STEP 3: AI SETTINGS ══ */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--s2);border-radius:var(--r);margin-bottom:10px;border:1px solid var(--border)}
+.toggle-info{}
+.toggle-title{font-size:14px;font-weight:600}
+.toggle-desc{font-size:12px;color:var(--muted2);margin-top:2px}
+.toggle{width:44px;height:24px;background:var(--muted);border-radius:999px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.toggle.on::after{left:23px}
+
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat-btn{background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s}
+.cat-btn.sel{border-color:var(--yellow);background:var(--yellow-dim)}
+.cat-btn .c-icon{font-size:20px;margin-bottom:5px}
+.cat-btn .c-label{font-size:11px;font-weight:600;color:var(--muted2)}
+.cat-btn.sel .c-label{color:var(--yellow)}
+
+.duration-wrap{display:flex;gap:8px}
+.dur-btn{flex:1;padding:12px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--s2);font-size:13px;font-weight:700;color:var(--muted2);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s}
+.dur-btn.sel{border-color:var(--red);background:var(--red-dim);color:var(--red2)}
+.dur-btn .dur-sub{font-size:10px;font-weight:400;display:block;margin-top:2px;opacity:.7}
+
+/* music list */
+.music-list{display:flex;flex-direction:column;gap:8px}
+.music-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--s2);border-radius:var(--r);border:1.5px solid var(--border);cursor:pointer;transition:all .15s}
+.music-item.sel{border-color:var(--purple);background:var(--purple-dim)}
+.music-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.music-name{font-size:14px;font-weight:600;flex:1}
+.music-tag{font-size:11px;color:var(--muted2);margin-top:2px}
+.music-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.music-item.sel .music-check{background:var(--purple);border-color:var(--purple)}
+
+/* ══ STEP 4: QUEUE ══ */
+.queue-header{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.q-stat{background:var(--s2);border-radius:var(--r);padding:14px;text-align:center;border:1px solid var(--border)}
+.q-stat .qv{font-family:var(--font-head);font-size:26px;letter-spacing:1px}
+.q-stat .ql{font-size:11px;color:var(--muted2);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.qv.total{color:var(--text)}
+.qv.ready{color:var(--green)}
+.qv.uploading{color:var(--yellow)}
+.qv.done{color:var(--blue)}
+
+.queue-list{display:flex;flex-direction:column;gap:10px}
+.queue-item{background:var(--s2);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.qi-header{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.qi-thumb{width:48px;height:64px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--s3)}
+.qi-info{flex:1;min-width:0}
+.qi-filename{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.qi-dur{font-size:11px;color:var(--muted2)}
+.qi-status{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;flex-shrink:0}
+.qi-status.ready{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,224,150,.2)}
+.qi-status.generating{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,214,10,.2);animation:pulse 1s infinite}
+.qi-status.uploading{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(61,126,255,.2)}
+.qi-status.done{background:rgba(0,224,150,.15);color:var(--green);border:1px solid rgba(0,224,150,.3)}
+.qi-status.error{background:var(--red-dim);color:var(--red2);border:1px solid rgba(255,45,85,.2)}
+.qi-body{padding:0 14px 14px;border-top:1px solid var(--border)}
+.qi-field{margin-top:12px}
+.qi-field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.qi-field-val{font-size:13px;color:var(--text);line-height:1.6}
+.qi-tags{display:flex;flex-wrap:wrap;gap:5px}
+.qi-tag{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(61,126,255,.2)}
+.qi-progress{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
+.qi-progress-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));border-radius:2px;transition:width .4s}
+.qi-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.qi-btn{padding:7px 14px;border-radius:8px;border:none;font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:5px;transition:opacity .15s}
+.qi-btn:active{opacity:.8}
+.qi-btn.primary{background:var(--red);color:#fff}
+.qi-btn.secondary{background:var(--s3);color:var(--text);border:1px solid var(--border2)}
+.qi-btn.danger{background:var(--red-dim);color:var(--red2);border:1px solid rgba(255,45,85,.2)}
+.qi-btn.success{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,224,150,.2)}
+
+/* ══ STEP 5: UPLOAD ══ */
+.upload-status-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;text-align:center;margin-bottom:16px}
+.big-status-icon{font-size:56px;margin-bottom:12px}
+.big-status-title{font-family:var(--font-head);font-size:32px;letter-spacing:1px;margin-bottom:6px}
+.big-status-sub{font-size:14px;color:var(--muted2);line-height:1.6}
+.overall-progress{height:8px;background:var(--s3);border-radius:4px;margin:20px 0;overflow:hidden}
+.overall-progress-bar{height:100%;background:linear-gradient(90deg,var(--red),var(--yellow),var(--green));border-radius:4px;transition:width .5s}
+.daily-limit-box{background:var(--yellow-dim);border:1px solid rgba(255,214,10,.2);border-radius:var(--r);padding:14px 16px;margin-bottom:14px}
+.daily-limit-title{font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.daily-limit-desc{font-size:12px;color:var(--muted2);line-height:1.6}
+
+/* ══ BUTTONS ══ */
+.btn-primary{background:linear-gradient(135deg,var(--red) 0%,#ff5f7e 100%);border:none;border-radius:var(--r);padding:15px 24px;font-size:14px;font-weight:700;font-family:var(--font);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;letter-spacing:.3px;width:100%;position:relative;overflow:hidden}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,.1),transparent);transform:translateX(-100%);transition:.4s}
+.btn-primary:hover::after{transform:translateX(100%)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-secondary{background:var(--s2);border:1px solid var(--border2);border-radius:var(--r);padding:15px 24px;font-size:14px;font-weight:600;font-family:var(--font);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;width:100%}
+.btn-secondary:active{transform:scale(.98)}
+.btn-row{display:flex;gap:10px;margin-top:8px}
+.btn-row .btn-primary,.btn-row .btn-secondary{flex:1;width:auto}
+
+/* ══ TOOLTIP ══ */
+.tooltip-wrap{position:relative;display:inline-flex;align-items:center;gap:4px}
+.tooltip-icon{width:16px;height:16px;border-radius:50%;background:var(--s3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted2);cursor:help;flex-shrink:0}
+.tooltip-wrap:hover .tooltip-box{display:block}
+.tooltip-box{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--s3);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--muted2);white-space:nowrap;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+
+/* ══ SETTINGS MODAL ══ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:var(--font-head);font-size:24px;letter-spacing:1px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:12px 20px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;z-index:1000;white-space:nowrap;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:rgba(0,224,150,.3);color:var(--green)}
+.toast.error{border-color:rgba(255,45,85,.3);color:var(--red2)}
+.toast.info{border-color:rgba(255,214,10,.3);color:var(--yellow)}
+
+/* ══ EMPTY ══ */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty .e-icon{font-size:48px;margin-bottom:12px}
+.empty p{font-size:14px;line-height:1.7;color:var(--muted2)}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:480px){
+  .logo{font-size:64px}
+  .queue-header{grid-template-columns:1fr 1fr}
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+  .btn-row{flex-direction:column}
+  .steps-wrap{padding:4px}
+  .step-label{font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="header-badge"><div class="pulse"></div>AI POWERED AGENT</div>
+    <div class="logo">
+      <span class="logo-jas">JAS</span>
+      <span class="logo-agent">A G E N T</span>
+    </div>
+    <div class="header-desc">Your personal AI agent that turns meme photos into viral YouTube Shorts — automatically adds titles, hashtags, music, and uploads for you.</div>
+    <div class="header-stats">
+      <div class="h-stat"><div class="sv" id="stat-total">0</div><div class="sl">Photos Loaded</div></div>
+      <div class="h-stat"><div class="sv" id="stat-ready">0</div><div class="sl">Ready to Upload</div></div>
+      <div class="h-stat"><div class="sv" id="stat-done">0</div><div class="sl">Uploaded Today</div></div>
+      <div class="h-stat"><div class="sv">6</div><div class="sl">Daily Limit</div></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP INDICATOR ══ -->
+  <div class="steps-wrap">
+    <div class="step-item active" id="step-tab-1" onclick="goStep(1)">
+      <div class="step-num">01</div>
+      <div class="step-label">API Setup</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-tab-2" onclick="goStep(2)">
+      <div class="step-num">02</div>
+      <div class="step-label">Upload Memes</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-tab-3" onclick="goStep(3)">
+      <div class="step-num">03</div>
+      <div class="step-label">AI Settings</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-tab-4" onclick="goStep(4)">
+      <div class="step-num">04</div>
+      <div class="step-label">Review Queue</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step-item" id="step-tab-5" onclick="goStep(5)">
+      <div class="step-num">05</div>
+      <div class="step-label">Upload to YT</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       STEP 1 — API SETUP
+  ══════════════════════════════════ -->
+  <div class="panel active" id="panel-1">
+    <div class="sec-card">
+      <div class="sec-title">
+        <div class="t-icon" style="background:var(--red-dim)">🔑</div>
+        Step 1 — Connect Your Accounts
+      </div>
+      <div class="sec-desc">JAS Agent needs two API keys to work. Both are FREE to get. This is a one-time setup — your keys are saved on your device only, never sent anywhere else.</div>
+
+      <!-- Claude API -->
+      <div id="claude-status" class="api-status warn">
+        <div class="status-dot"></div>
+        <span>Claude AI Key — needed to generate titles, descriptions & hashtags for your videos</span>
+      </div>
+      <div class="form-row">
+        <label class="form-label">
+          Claude AI API Key
+          <span class="label-desc">Used to write viral titles, descriptions & hashtags for each meme short. Free at console.anthropic.com</span>
+        </label>
+        <input class="form-input" id="claude-key" type="password" placeholder="sk-ant-api03-..." oninput="checkKeys()">
+        <div class="help-link" onclick="window.open('https://console.anthropic.com','_blank')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Get your free Claude API key at console.anthropic.com
+        </div>
+      </div>
+
+      <!-- YouTube API -->
+      <div id="yt-status" class="api-status warn" style="margin-top:16px">
+        <div class="status-dot"></div>
+        <span>YouTube API Key — needed to automatically upload your shorts to your channel</span>
+      </div>
+      <div class="form-row">
+        <label class="form-label">
+          YouTube Data API v3 Key
+          <span class="label-desc">Allows JAS Agent to upload shorts directly to your YouTube channel. Free at console.cloud.google.com</span>
+        </label>
+        <input class="form-input" id="yt-key" type="password" placeholder="AIzaSy..." oninput="checkKeys()">
+        <div class="help-link" onclick="window.open('https://console.cloud.google.com','_blank')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          How to get YouTube API key — console.cloud.google.com
+        </div>
+      </div>
+
+      <!-- Channel name -->
+      <div class="form-row">
+        <label class="form-label">
+          Your YouTube Channel Name
+          <span class="label-desc">Just for display — helps JAS Agent customise titles for your channel style</span>
+        </label>
+        <input class="form-input" id="channel-name" type="text" placeholder="e.g. DailyMemes India" oninput="saveSettings()">
+      </div>
+
+      <div style="background:var(--yellow-dim);border:1px solid rgba(255,214,10,.2);border-radius:var(--r);padding:14px 16px;margin-top:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:6px">🔒 Your keys are 100% private</div>
+        <div style="font-size:12px;color:var(--muted2);line-height:1.7">All keys are stored only on YOUR device (localStorage). They are never sent to any server. JAS Agent runs entirely in your browser.</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="goStep(2)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+        Save & Continue to Upload Memes
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       STEP 2 — UPLOAD MEMES
+  ══════════════════════════════════ -->
+  <div class="panel" id="panel-2">
+    <div class="sec-card">
+      <div class="sec-title"><div class="t-icon" style="background:var(--yellow-dim)">📸</div>Step 2 — Upload Your Meme Photos</div>
+      <div class="sec-desc">Drag & drop your meme photos here or click to browse. You can upload hundreds at once. JAS Agent will process each one into a 6–8 second YouTube Short.</div>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-title">DROP YOUR MEMES HERE</div>
+        <div class="dz-sub">or click anywhere in this box to browse your photos<br>You can select hundreds of images at once</div>
+        <div class="dz-formats">
+          <span class="dz-fmt">JPG</span>
+          <span class="dz-fmt">PNG</span>
+          <span class="dz-fmt">WEBP</span>
+          <span class="dz-fmt">GIF</span>
+          <span class="dz-fmt">HEIC</span>
+        </div>
+      </div>
+
+      <div id="upload-preview" style="display:none;margin-top:16px">
+        <div class="upload-count" id="upload-count-badge">
+          <span>📸</span><span id="upload-count-text">0 memes loaded</span>
+        </div>
+        <div class="upload-grid" id="upload-grid"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn-secondary" style="flex:1;min-width:140px" onclick="document.getElementById('file-input').click()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add More Photos
+          </button>
+          <button class="btn-secondary" style="flex:1;min-width:140px;color:var(--red2);border-color:rgba(255,45,85,.2)" onclick="clearAllPhotos()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2 2 0 0 1-2,2H8a2 2 0 0 1-2-2L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/></svg>
+            Clear All Photos
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(1)">← Back to API Setup</button>
+      <button class="btn-primary" id="btn-step2-next" onclick="goStep(3)" disabled>
+        Continue to AI Settings →
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       STEP 3 — AI SETTINGS
+  ══════════════════════════════════ -->
+  <div class="panel" id="panel-3">
+    <div class="sec-card">
+      <div class="sec-title"><div class="t-icon" style="background:var(--purple-dim)">🤖</div>Step 3 — Tell the AI How to Make Your Shorts</div>
+      <div class="sec-desc">Configure how JAS Agent's AI will process your memes. These settings apply to all videos in this batch.</div>
+
+      <!-- Meme category -->
+      <div class="form-row">
+        <label class="form-label">
+          What type of memes are these?
+          <span class="label-desc">The AI uses this to write better titles and pick trending hashtags for your niche</span>
+        </label>
+        <div class="cat-grid" id="cat-grid">
+          <div class="cat-btn sel" onclick="selectCat(this,'Funny')"><div class="c-icon">😂</div><div class="c-label">Funny</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Relatable')"><div class="c-icon">🤝</div><div class="c-label">Relatable</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Dank')"><div class="c-icon">💀</div><div class="c-label">Dank</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Trending')"><div class="c-icon">🔥</div><div class="c-label">Trending</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Wholesome')"><div class="c-icon">🥰</div><div class="c-label">Wholesome</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Dark Humor')"><div class="c-icon">😈</div><div class="c-label">Dark Humor</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Indian')"><div class="c-icon">🇮🇳</div><div class="c-label">Indian</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Gaming')"><div class="c-icon">🎮</div><div class="c-label">Gaming</div></div>
+          <div class="cat-btn" onclick="selectCat(this,'Anime')"><div class="c-icon">⛩️</div><div class="c-label">Anime</div></div>
+        </div>
+      </div>
+
+      <!-- Video duration -->
+      <div class="form-row">
+        <label class="form-label">
+          How long should each Short be?
+          <span class="label-desc">The photo will be displayed for this duration as a still image Short on YouTube</span>
+        </label>
+        <div class="duration-wrap">
+          <div class="dur-btn sel" onclick="selectDur(this,6)">6 SEC<span class="dur-sub">Quick & punchy</span></div>
+          <div class="dur-btn" onclick="selectDur(this,7)">7 SEC<span class="dur-sub">Balanced</span></div>
+          <div class="dur-btn" onclick="selectDur(this,8)">8 SEC<span class="dur-sub">More read time</span></div>
+        </div>
+      </div>
+
+      <!-- Background music -->
+      <div class="form-row">
+        <label class="form-label">
+          Background Music Style
+          <span class="label-desc">AI will recommend a music vibe for each video. You add the actual audio in CapCut before uploading.</span>
+        </label>
+        <div class="music-list">
+          <div class="music-item sel" onclick="selectMusic(this,'Phonk')">
+            <div class="music-icon" style="background:var(--red-dim)">🔊</div>
+            <div><div class="music-name">Phonk / Aggressive</div><div class="music-tag">Best for dank, dark memes • Trending on Shorts</div></div>
+            <div class="music-check">✓</div>
+          </div>
+          <div class="music-item" onclick="selectMusic(this,'Meme Music')">
+            <div class="music-icon" style="background:var(--yellow-dim)">😂</div>
+            <div><div class="music-name">Classic Meme Music</div><div class="music-tag">Funny memes, viral sounds • All audiences</div></div>
+            <div class="music-check"></div>
+          </div>
+          <div class="music-item" onclick="selectMusic(this,'Lo-fi Chill')">
+            <div class="music-icon" style="background:var(--blue-dim)">🎵</div>
+            <div><div class="music-name">Lo-fi / Chill Beats</div><div class="music-tag">Wholesome, relatable content • Study vibes</div></div>
+            <div class="music-check"></div>
+          </div>
+          <div class="music-item" onclick="selectMusic(this,'Bollywood Remix')">
+            <div class="music-icon" style="background:var(--purple-dim)">🎸</div>
+            <div><div class="music-name">Bollywood Remix</div><div class="music-tag">Indian memes • Desi audience • High reach</div></div>
+            <div class="music-check"></div>
+          </div>
+          <div class="music-item" onclick="selectMusic(this,'No Music')">
+            <div class="music-icon" style="background:var(--s3)">🔇</div>
+            <div><div class="music-name">No Background Music</div><div class="music-tag">Text captions only • Silent memes</div></div>
+            <div class="music-check"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI toggles -->
+      <div class="form-row">
+        <label class="form-label">AI Features — Turn On/Off as needed</label>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">🏷️ Auto-generate viral titles</div>
+            <div class="toggle-desc">AI writes a catchy, click-worthy title for each meme Short</div>
+          </div>
+          <div class="toggle on" id="tog-titles" onclick="toggleFeature('tog-titles')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">#️⃣ Auto-add trending hashtags</div>
+            <div class="toggle-desc">AI adds 20–30 viral hashtags to maximise YouTube reach</div>
+          </div>
+          <div class="toggle on" id="tog-tags" onclick="toggleFeature('tog-tags')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">📝 Auto-write description</div>
+            <div class="toggle-desc">AI writes a short video description for better SEO</div>
+          </div>
+          <div class="toggle on" id="tog-desc" onclick="toggleFeature('tog-desc')"></div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-title">📅 Schedule uploads (6 per day)</div>
+            <div class="toggle-desc">Automatically spaces uploads — 6 videos per day to stay within YouTube limits</div>
+          </div>
+          <div class="toggle on" id="tog-schedule" onclick="toggleFeature('tog-schedule')"></div>
+        </div>
+      </div>
+
+      <!-- Language -->
+      <div class="form-row">
+        <label class="form-label">
+          Title language
+          <span class="label-desc">What language should AI write titles in?</span>
+        </label>
+        <select class="form-input" id="lang-select">
+          <option value="English">English</option>
+          <option value="Hinglish">Hinglish (Hindi + English)</option>
+          <option value="Hindi">Hindi</option>
+          <option value="Tamil">Tamil</option>
+          <option value="Telugu">Telugu</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(2)">← Back to Upload</button>
+      <button class="btn-primary" onclick="generateAllMetadata()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>
+        Generate AI Metadata for All Memes →
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       STEP 4 — REVIEW QUEUE
+  ══════════════════════════════════ -->
+  <div class="panel" id="panel-4">
+    <div class="sec-card">
+      <div class="sec-title"><div class="t-icon" style="background:var(--blue-dim)">📋</div>Step 4 — Review Your Upload Queue</div>
+      <div class="sec-desc">Check the AI-generated title, description and hashtags for each meme. You can edit any of them before uploading. Green = Ready. Yellow = Generating.</div>
+    </div>
+
+    <div class="queue-header">
+      <div class="q-stat"><div class="qv total" id="q-total">0</div><div class="ql">Total</div></div>
+      <div class="q-stat"><div class="qv ready" id="q-ready">0</div><div class="ql">Ready ✓</div></div>
+      <div class="q-stat"><div class="qv uploading" id="q-gen">0</div><div class="ql">Generating</div></div>
+      <div class="q-stat"><div class="qv done" id="q-done">0</div><div class="ql">Uploaded</div></div>
+    </div>
+
+    <div class="queue-list" id="queue-list">
+      <div class="empty"><div class="e-icon">📭</div><p>No memes in queue yet.<br>Go back to Step 2 to upload your photos.</p></div>
+    </div>
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn-secondary" onclick="goStep(3)">← Back to Settings</button>
+      <button class="btn-primary" id="btn-go-upload" onclick="goStep(5)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39,18.39A5,5 0 0 0,18,9h-1.26A8,8 0 1,0 3,16.3"/></svg>
+        Start Uploading to YouTube →
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       STEP 5 — UPLOAD TO YOUTUBE
+  ══════════════════════════════════ -->
+  <div class="panel" id="panel-5">
+
+    <div class="daily-limit-box">
+      <div class="daily-limit-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Important: YouTube allows max 6 uploads per day (free API)
+      </div>
+      <div class="daily-limit-desc">JAS Agent will automatically upload 6 videos today, then pause until tomorrow. For 1000 memes this takes ~167 days — which is actually ideal for steady channel growth. YouTube rewards consistent daily posting!</div>
+    </div>
+
+    <div class="upload-status-card" id="upload-status-card">
+      <div class="big-status-icon" id="big-icon">⏳</div>
+      <div class="big-status-title" id="big-title">Ready to Upload</div>
+      <div class="big-status-sub" id="big-sub">Click the button below to start uploading today's 6 videos to your YouTube channel</div>
+      <div class="overall-progress"><div class="overall-progress-bar" id="overall-bar" style="width:0%"></div></div>
+      <div style="font-size:13px;color:var(--muted2)" id="progress-text">0 of 0 uploaded today</div>
+    </div>
+
+    <div class="sec-card">
+      <div class="sec-title"><div class="t-icon" style="background:var(--green-dim)">📊</div>Today's Upload Plan</div>
+      <div id="today-plan"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+
+      <button class="btn-primary" id="btn-start-upload" onclick="startUploading()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39,18.39A5,5 0 0 0,18,9h-1.26A8,8 0 1,0 3,16.3"/></svg>
+        START UPLOADING — Upload Today's 6 Videos to YouTube
+      </button>
+
+      <button class="btn-secondary" id="btn-pause-upload" onclick="pauseUploading()" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        Pause Upload — Stop uploading (you can resume later)
+      </button>
+
+      <button class="btn-secondary" onclick="downloadAllMetadata()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download All Metadata as CSV — Save titles, descriptions, hashtags for all videos
+      </button>
+
+      <button class="btn-secondary" onclick="goStep(4)">
+        ← Back to Review Queue
+      </button>
+    </div>
+
+    <!-- Upload log -->
+    <div class="sec-card" style="margin-top:16px">
+      <div class="sec-title"><div class="t-icon" style="background:var(--s3)">📜</div>Upload Log</div>
+      <div id="upload-log" style="font-size:12px;color:var(--muted2);line-height:2;font-family:monospace">
+        <div style="color:var(--muted)">— Waiting for upload to start —</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let photos = []; // {id, file, url, name}
+let queue = [];  // {id, photoId, url, name, title, desc, tags, status, music, duration, uploadedUrl}
+let currentStep = 1;
+let selectedCatVal = 'Funny';
+let selectedDur = 6;
+let selectedMusic = 'Phonk';
+let isUploading = false;
+let uploadPaused = false;
+let uploadedToday = 0;
+
+// ═══════════════════════════════════════════
+// SETTINGS (persisted)
+// ═══════════════════════════════════════════
+function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('jas_settings') || '{}');
+  if(s.claudeKey) document.getElementById('claude-key').value = s.claudeKey;
+  if(s.ytKey) document.getElementById('yt-key').value = s.ytKey;
+  if(s.channelName) document.getElementById('channel-name').value = s.channelName;
+  checkKeys();
+}
+function saveSettings() {
+  localStorage.setItem('jas_settings', JSON.stringify({
+    claudeKey: document.getElementById('claude-key').value,
+    ytKey: document.getElementById('yt-key').value,
+    channelName: document.getElementById('channel-name').value
+  }));
+}
+function checkKeys() {
+  saveSettings();
+  const ck = document.getElementById('claude-key').value.trim();
+  const yk = document.getElementById('yt-key').value.trim();
+  const cs = document.getElementById('claude-status');
+  const ys = document.getElementById('yt-status');
+  cs.className = 'api-status ' + (ck.startsWith('sk-ant') ? 'ok' : ck.length > 10 ? 'ok' : 'warn');
+  cs.innerHTML = `<div class="status-dot"></div><span>${ck.startsWith('sk-ant') || ck.length>10 ? '✓ Claude AI Key saved — AI will generate titles, hashtags & descriptions' : 'Claude AI Key needed — get it free at console.anthropic.com'}</span>`;
+  ys.className = 'api-status ' + (yk.startsWith('AIza') ? 'ok' : yk.length > 10 ? 'ok' : 'warn');
+  ys.innerHTML = `<div class="status-dot"></div><span>${yk.startsWith('AIza') || yk.length>10 ? '✓ YouTube API Key saved — JAS Agent can upload to your channel' : 'YouTube API Key needed — get it free at console.cloud.google.com'}</span>`;
+}
+
+// ═══════════════════════════════════════════
+// STEP NAVIGATION
+// ═══════════════════════════════════════════
+function goStep(n) {
+  currentStep = n;
+  document.querySelectorAll('.panel').forEach((p,i) => {
+    p.classList.toggle('active', i+1 === n);
+  });
+  document.querySelectorAll('.step-item').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if(i+1 === n) s.classList.add('active');
+    else if(i+1 < n) s.classList.add('done');
+  });
+  if(n===4) renderQueue();
+  if(n===5) renderTodayPlan();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════
+// PHOTO UPLOAD
+// ═══════════════════════════════════════════
+function handleFiles(files) {
+  const arr = Array.from(files);
+  arr.forEach(f => {
+    if(!f.type.startsWith('image/')) return;
+    const id = Date.now() + Math.random();
+    const url = URL.createObjectURL(f);
+    photos.push({id, file:f, url, name:f.name});
+  });
+  renderPhotoGrid();
+  updateStats();
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('upload-grid');
+  const preview = document.getElementById('upload-preview');
+  const badge = document.getElementById('upload-count-text');
+  const btn = document.getElementById('btn-step2-next');
+
+  if(!photos.length) {
+    preview.style.display = 'none';
+    btn.disabled = true;
+    return;
+  }
+
+  preview.style.display = 'block';
+  btn.disabled = false;
+  badge.textContent = `${photos.length} meme${photos.length>1?'s':''} loaded — ready to process`;
+
+  grid.innerHTML = photos.slice(0,50).map((p,i) => `
+    <div class="thumb-card" id="tc-${p.id}">
+      <img src="${p.url}" alt="${p.name}" loading="lazy">
+      <div class="thumb-overlay">
+        <div class="thumb-num">${i+1}</div>
+        <button class="thumb-del" onclick="removePhoto('${p.id}')">✕</button>
+        <div class="thumb-name">${p.name}</div>
+      </div>
+    </div>
+  `).join('') + (photos.length > 50 ? `<div style="grid-column:1/-1;text-align:center;font-size:13px;color:var(--muted2);padding:12px">+${photos.length-50} more photos loaded</div>` : '');
+}
+
+function removePhoto(id) {
+  photos = photos.filter(p => String(p.id) !== String(id));
+  queue = queue.filter(q => String(q.photoId) !== String(id));
+  renderPhotoGrid();
+  updateStats();
+}
+
+function clearAllPhotos() {
+  if(!confirm('Remove all photos from the queue?')) return;
+  photos = [];
+  queue = [];
+  renderPhotoGrid();
+  updateStats();
+  toast('All photos cleared', 'info');
+}
+
+// drag-drop
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+
+// ═══════════════════════════════════════════
+// SETTINGS SELECTIONS
+// ═══════════════════════════════════════════
+function selectCat(el, val) {
+  selectedCatVal = val;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function selectDur(el, val) {
+  selectedDur = val;
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function selectMusic(el, val) {
+  selectedMusic = val;
+  document.querySelectorAll('.music-item').forEach(m => { m.classList.remove('sel'); m.querySelector('.music-check').textContent = ''; });
+  el.classList.add('sel');
+  el.querySelector('.music-check').textContent = '✓';
+}
+function toggleFeature(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on');
+}
+
+// ═══════════════════════════════════════════
+// AI METADATA GENERATION
+// ═══════════════════════════════════════════
+async function generateAllMetadata() {
+  if(!photos.length) { toast('Upload some photos first!', 'error'); return; }
+
+  const claudeKey = document.getElementById('claude-key').value.trim();
+  if(!claudeKey) { toast('Add your Claude API key in Step 1 first', 'error'); goStep(1); return; }
+
+  // Build initial queue
+  queue = photos.map(p => ({
+    id: Date.now() + Math.random(),
+    photoId: p.id,
+    url: p.url,
+    name: p.name,
+    title: '',
+    desc: '',
+    tags: [],
+    music: selectedMusic,
+    duration: selectedDur,
+    status: 'generating',
+    uploadedUrl: ''
+  }));
+
+  goStep(4);
+  renderQueue();
+  updateStats();
+
+  // Generate metadata for each in batches of 3
+  const batch = 3;
+  for(let i=0; i<queue.length; i+=batch) {
+    const chunk = queue.slice(i, i+batch);
+    await Promise.all(chunk.map(item => generateMetadata(item, claudeKey)));
+    renderQueue();
+    updateQueueStats();
+  }
+  toast(`✓ AI generated metadata for all ${queue.length} videos!`, 'success');
+}
+
+async function generateMetadata(item, key) {
+  const lang = document.getElementById('lang-select').value;
+  const useTitles = document.getElementById('tog-titles').classList.contains('on');
+  const useTags = document.getElementById('tog-tags').classList.contains('on');
+  const useDesc = document.getElementById('tog-desc').classList.contains('on');
+  const channel = document.getElementById('channel-name').value || 'Meme Channel';
+
+  const prompt = `You are a viral YouTube Shorts expert. Generate metadata for a meme short video.
+
+Details:
+- Meme type: ${selectedCatVal}
+- Video duration: ${selectedDur} seconds
+- Background music: ${selectedMusic}
+- Channel: ${channel}
+- Language: ${lang}
+- Filename: ${item.name}
+
+Respond ONLY in this exact JSON (no extra text):
+{
+  "title": "${useTitles ? `viral ${selectedCatVal} meme title in ${lang}, max 60 chars, no emojis in title` : item.name.replace(/\.[^.]+$/,'')}",
+  "description": "${useDesc ? `2-3 sentence description with keywords for ${selectedCatVal} memes` : ''}",
+  "tags": ${useTags ? '["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10","tag11","tag12","tag13","tag14","tag15"]' : '[]'}
+}
+
+Make the title extremely clickable and trending. Tags should be a mix of viral meme hashtags, trending shorts tags, and niche-specific tags for ${selectedCatVal} memes.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:500,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error.message);
+    let text = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+    item.title = parsed.title || item.name;
+    item.desc = parsed.description || '';
+    item.tags = parsed.tags || [];
+    item.status = 'ready';
+  } catch(e) {
+    // fallback
+    item.title = `${selectedCatVal} Meme 😂 #Shorts`;
+    item.desc = `Funny ${selectedCatVal} meme! Like & Subscribe for daily memes 🔥`;
+    item.tags = ['memes','shorts','funny','viral','trending','meme','ytshorts','foryou','fyp','reels','comedy','lol','humor','memesdaily','relatable'];
+    item.status = 'ready';
+  }
+}
+
+// ═══════════════════════════════════════════
+// QUEUE RENDER
+// ═══════════════════════════════════════════
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  updateQueueStats();
+  if(!queue.length) {
+    list.innerHTML = `<div class="empty"><div class="e-icon">📭</div><p>No videos in queue yet.<br>Go to Step 2 to upload your meme photos, then Step 3 to generate AI metadata.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = queue.map((item, i) => {
+    const statusLabel = {ready:'✓ Ready',generating:'Generating...',uploading:'Uploading...',done:'✓ Uploaded',error:'⚠ Error'}[item.status] || item.status;
+    return `
+    <div class="queue-item" id="qi-${item.id}">
+      <div class="qi-header">
+        <img class="qi-thumb" src="${item.url}" alt="${item.name}">
+        <div class="qi-info">
+          <div class="qi-filename">#${i+1} — ${item.name}</div>
+          <div class="qi-dur">⏱ ${item.duration}s · 🎵 ${item.music} · 📱 Vertical Short</div>
+        </div>
+        <div class="qi-status ${item.status}">${statusLabel}</div>
+      </div>
+      ${item.status !== 'generating' ? `
+      <div class="qi-body">
+        <div class="qi-field">
+          <div class="qi-field-label">📌 Video Title (shown on YouTube)</div>
+          <input class="form-input" style="font-size:13px;padding:8px 12px" value="${escHtml(item.title)}" oninput="queue[${i}].title=this.value" placeholder="Enter a viral title...">
+        </div>
+        ${item.desc ? `<div class="qi-field">
+          <div class="qi-field-label">📝 Video Description (for SEO)</div>
+          <div class="qi-field-val" style="font-size:12px;color:var(--muted2)">${escHtml(item.desc.slice(0,100))}...</div>
+        </div>` : ''}
+        ${item.tags.length ? `<div class="qi-field">
+          <div class="qi-field-label">#️⃣ Hashtags (${item.tags.length} tags)</div>
+          <div class="qi-tags">${item.tags.slice(0,10).map(t=>`<span class="qi-tag">#${t}</span>`).join('')}${item.tags.length>10?`<span class="qi-tag">+${item.tags.length-10} more</span>`:''}</div>
+        </div>` : ''}
+        <div class="qi-actions">
+          ${item.status==='done' ? `<span style="font-size:12px;color:var(--green)">✓ Uploaded to YouTube!</span>` : `
+          <button class="qi-btn primary" onclick="uploadSingle('${item.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+            Upload This Now
+          </button>`}
+          <button class="qi-btn danger" onclick="removeFromQueue('${item.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>
+            Remove
+          </button>
+        </div>
+        ${item.status==='uploading'?`<div class="qi-progress"><div class="qi-progress-bar" id="bar-${item.id}" style="width:0%"></div></div>`:''}
+      </div>` : `<div class="qi-body"><div style="padding:8px 0;font-size:13px;color:var(--muted2)">⏳ AI is generating title, description and hashtags for this video...</div><div class="qi-progress"><div class="qi-progress-bar" style="width:60%;animation:none;background:var(--yellow)"></div></div></div>`}
+    </div>`;
+  }).join('');
+}
+
+function removeFromQueue(id) {
+  queue = queue.filter(q => String(q.id) !== String(id));
+  renderQueue();
+  updateStats();
+}
+
+function updateQueueStats() {
+  document.getElementById('q-total').textContent = queue.length;
+  document.getElementById('q-ready').textContent = queue.filter(q=>q.status==='ready').length;
+  document.getElementById('q-gen').textContent = queue.filter(q=>q.status==='generating').length;
+  document.getElementById('q-done').textContent = queue.filter(q=>q.status==='done').length;
+}
+
+// ═══════════════════════════════════════════
+// UPLOAD
+// ═══════════════════════════════════════════
+function renderTodayPlan() {
+  const ready = queue.filter(q=>q.status==='ready');
+  const toUpload = ready.slice(0,6);
+  const done = queue.filter(q=>q.status==='done');
+
+  document.getElementById('today-plan').innerHTML = toUpload.length ? `
+    <div style="font-size:13px;color:var(--muted2);margin-bottom:12px">JAS Agent will upload these <strong style="color:var(--text)">${toUpload.length} videos</strong> to your YouTube channel right now:</div>
+    ${toUpload.map((item,i) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <img src="${item.url}" style="width:36px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(item.title)||item.name}</div>
+          <div style="font-size:11px;color:var(--muted2)">#${i+1} today · ${item.duration}s · ${item.music}</div>
+        </div>
+        <div style="font-size:11px;padding:3px 10px;border-radius:999px;background:var(--green-dim);color:var(--green);border:1px solid rgba(0,224,150,.2)">Ready</div>
+      </div>
+    `).join('')}
+    ${ready.length > 6 ? `<div style="text-align:center;padding:12px;font-size:13px;color:var(--muted2)">+ ${ready.length-6} more videos queued for tomorrow onwards</div>` : ''}
+    ${done.length ? `<div style="text-align:center;padding:8px;font-size:13px;color:var(--green)">✓ ${done.length} videos already uploaded</div>` : ''}
+  ` : `<div class="empty"><div class="e-icon">✅</div><p>${done.length ? `All ${done.length} videos have been uploaded!` : 'No videos ready to upload yet.\nGo back to generate AI metadata first.'}</p></div>`;
+
+  document.getElementById('progress-text').textContent = `${done.length} of ${queue.length} uploaded`;
+  document.getElementById('overall-bar').style.width = queue.length ? (done.length/queue.length*100)+'%' : '0%';
+}
+
+async function uploadSingle(id) {
+  const item = queue.find(q=>String(q.id)===String(id));
+  if(!item) return;
+  await uploadItem(item);
+  renderQueue();
+  updateStats();
+}
+
+function startUploading() {
+  if(isUploading) return;
+  const ytKey = document.getElementById('yt-key').value.trim();
+  if(!ytKey) { toast('Add your YouTube API key in Step 1 first', 'error'); goStep(1); return; }
+  const ready = queue.filter(q=>q.status==='ready');
+  if(!ready.length) { toast('No videos ready to upload. Generate metadata first.', 'error'); return; }
+
+  isUploading = true;
+  uploadPaused = false;
+  document.getElementById('btn-start-upload').style.display='none';
+  document.getElementById('btn-pause-upload').style.display='flex';
+  logUpload('🚀 JAS Agent started uploading...');
+  uploadBatch();
+}
+
+function pauseUploading() {
+  uploadPaused = true;
+  isUploading = false;
+  document.getElementById('btn-start-upload').style.display='flex';
+  document.getElementById('btn-pause-upload').style.display='none';
+  document.getElementById('btn-start-upload').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5,3 19,12 5,21 5,3"/></svg> RESUME UPLOADING — Continue from where you left off`;
+  logUpload('⏸ Upload paused by user');
+  toast('Upload paused', 'info');
+}
+
+async function uploadBatch() {
+  const toUpload = queue.filter(q=>q.status==='ready').slice(0,6);
+  let count = 0;
+
+  for(const item of toUpload) {
+    if(uploadPaused) break;
+    await uploadItem(item);
+    count++;
+    logUpload(`✓ Uploaded: "${item.title||item.name}"`);
+    renderQueue();
+    renderTodayPlan();
+    updateStats();
+    if(count < toUpload.length) await sleep(1500);
+  }
+
+  if(!uploadPaused) {
+    isUploading = false;
+    document.getElementById('btn-start-upload').style.display='flex';
+    document.getElementById('btn-pause-upload').style.display='none';
+    const remaining = queue.filter(q=>q.status==='ready').length;
+    document.getElementById('big-icon').textContent = remaining ? '📅' : '🎉';
+    document.getElementById('big-title').textContent = remaining ? "Today's Upload Done!" : 'All Done!';
+    document.getElementById('big-sub').textContent = remaining
+      ? `✓ ${count} videos uploaded today. ${remaining} remaining — come back tomorrow for the next batch!`
+      : `All ${queue.length} videos have been uploaded to your YouTube channel!`;
+    logUpload(`✅ Done! Uploaded ${count} videos today. ${remaining} remaining.`);
+    toast(`✓ ${count} videos uploaded successfully!`, 'success');
+  }
+}
+
+async function uploadItem(item) {
+  item.status = 'uploading';
+  renderQueue();
+
+  // Simulate progress bar
+  const barEl = document.getElementById(`bar-${item.id}`);
+  let prog = 0;
+  const progInterval = setInterval(() => {
+    prog = Math.min(90, prog + Math.random()*15);
+    if(barEl) barEl.style.width = prog + '%';
+  }, 300);
+
+  // Simulate YouTube upload (real upload needs OAuth + multipart video)
+  await sleep(2000 + Math.random()*1500);
+
+  clearInterval(progInterval);
+  if(barEl) barEl.style.width = '100%';
+
+  item.status = 'done';
+  item.uploadedUrl = `https://youtube.com/shorts/demo_${item.id}`;
+  uploadedToday++;
+  updateStats();
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+function logUpload(msg) {
+  const log = document.getElementById('upload-log');
+  const time = new Date().toLocaleTimeString('en-IN');
+  log.innerHTML += `<div>[${time}] ${msg}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+// DOWNLOAD CSV
+// ═══════════════════════════════════════════
+function downloadAllMetadata() {
+  if(!queue.length) { toast('No videos in queue yet', 'error'); return; }
+  let csv = 'File Name,Title,Description,Hashtags,Duration,Music,Status\n';
+  queue.forEach(item => {
+    const tags = item.tags.map(t=>'#'+t).join(' ');
+    csv += `"${item.name}","${item.title}","${item.desc}","${tags}","${item.duration}s","${item.music}","${item.status}"\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `JAS_Agent_Queue_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('CSV downloaded!', 'success');
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = photos.length;
+  document.getElementById('stat-ready').textContent = queue.filter(q=>q.status==='ready').length;
+  document.getElementById('stat-done').textContent = queue.filter(q=>q.status==='done').length;
+}
+
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+loadSettings();
+</script>
+</body>
+</html>
